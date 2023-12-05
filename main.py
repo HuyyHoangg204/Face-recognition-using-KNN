@@ -42,6 +42,12 @@ class MainApplication(QMainWindow):
 
         except Exception as e:
             print("Lỗi dang_nhap_clicked:", str(e))
+            # Thông báo lỗi
+            error_message = QMessageBox()
+            error_message.setIcon(QMessageBox.Icon.Critical)
+            error_message.setText(str(e))
+            error_message.setWindowTitle("Lỗi")
+            error_message.exec()
 
     def start_webcam_dang_nhap(self, username, password):
         print("start_webcam")
@@ -68,22 +74,26 @@ class MainApplication(QMainWindow):
                     error_message.setText("Tài khoản đã tồn tại.")
                     error_message.setWindowTitle("Lỗi")
                     error_message.exec()
-                else:
-                    # xác thực thêm khuôn mặt ở đây
+                    return
 
-                    # Nếu tên người dùng chưa tồn tại, thực hiện đăng ký
-                    if SQL.register_user(tk_dang_ky, mk_dang_ky):
-                        success_message = QMessageBox()
-                        success_message.setIcon(QMessageBox.Icon.Information)
-                        success_message.setText("Đăng ký thành công.")
-                        success_message.setWindowTitle("Thông báo")
-                        success_message.exec()
-                    else:
-                        error_message = QMessageBox()
-                        error_message.setIcon(QMessageBox.Icon.Critical)
-                        error_message.setText("Đăng ký không thành công. Vui lòng thử lại.")
-                        error_message.setWindowTitle("Lỗi")
-                        error_message.exec()
+                # xác thực thêm khuôn mặt ở đây
+                from cam_dang_ky import CamDangKy
+                cam = CamDangKy(tk_dang_ky, mk_dang_ky)
+                cam.show_cam()
+
+                # Nếu tên người dùng chưa tồn tại, thực hiện đăng ký
+                if SQL.register_user(tk_dang_ky, mk_dang_ky) and cam.update_model():
+                    success_message = QMessageBox()
+                    success_message.setIcon(QMessageBox.Icon.Information)
+                    success_message.setText("Đăng ký thành công.")
+                    success_message.setWindowTitle("Thông báo")
+                    success_message.exec()
+                else:
+                    error_message = QMessageBox()
+                    error_message.setIcon(QMessageBox.Icon.Critical)
+                    error_message.setText("Đăng ký không thành công. Vui lòng thử lại.")
+                    error_message.setWindowTitle("Lỗi")
+                    error_message.exec()
 
         except Exception as e:
             print("Lỗi dang_ky_clicked:", str(e))

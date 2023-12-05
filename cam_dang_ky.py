@@ -4,6 +4,8 @@ import tkinter as tk
 import joblib
 import numpy as np
 import time
+import train_model.prepare_image
+import train_model.update_model
 
 
 class CamDangKy:
@@ -19,23 +21,7 @@ class CamDangKy:
         self.tk_dang_ky = tk_dang_ky
         self.mk_dang_ky = mk
         self.image_collection = []
-        # Load mô hình từ tệp đã lưu
-        self.knn_model = joblib.load('train_model/face_recognition_model.joblib')
-
-        # Tải bộ phân loại khuôn mặt đã được huấn luyện từ OpenCV
         self.face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-
-    def detect_face(self, image):
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        faces = self.face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=3, minSize=(30, 30))
-        return faces
-
-    def extract_face_features(self, image, faces):
-        face_features = []
-        for (x, y, w, h) in faces:
-            face_roi = cv2.resize(image[y:y + h, x:x + w], (50, 50))
-            face_features.append(face_roi.flatten())
-        return np.array(face_features)
 
     def show_notification(self, message):
         notification_window = tk.Tk()
@@ -92,13 +78,17 @@ class CamDangKy:
             if self.doneShow:
                 break
 
+        # train model test hàm này sẽ được gọi bên file main.py khi đăng ký,
+        # tháo comment này ra để test thôi
+        # self.update_model()
+
         # Giải phóng camera và đóng cửa sổ
         cam.release()
         cv2.destroyAllWindows()
 
     def on_button_click(self, event, x, y, flags, param):
         if event == cv2.EVENT_LBUTTONDOWN:
-            # Save data
+            # event nút chụp ảnh
             if (self.button_x <= x <= self.button_x + self.button_width and
                     self.button_y <= y <= self.button_y + self.button_height):
                 if self.ret:
@@ -111,45 +101,45 @@ class CamDangKy:
                         # thông báo
                         self.show_notification("Ảnh đã được chụp:")
                         self.img_counter += 1
+                    else:
+                        self.show_notification("Ảnh phải có khuôn mặt")
 
+            # event nút lưu dữ liệu
             elif (self.text_x <= x <= self.text_x + self.text_width and
                   self.text_y <= y <= self.text_y + self.text_height):
 
                 if self.image_collection:
-                    # for image in self.image_collection:
-                    #     # Chuyển đổi ảnh sang ảnh xám
-                    #     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-                    #
-                    #     # Phát hiện khuôn mặt trong ảnh mới
-                    #     faces = self.face_cascade.detectMultiScale(gray_image, scaleFactor=1.1, minNeighbors=3,
-                    #                                           minSize=(30, 30))
-                    #     i = 0
-                    #     if len(faces) > 0:
-                    #         # Rút trích đặc trưng từ khuôn mặt mới
-                    #         new_face_features = self.extract_face_features(image, faces)
-                    #
-                    #         # Chắc chắn rằng new_face_features có kích thước 900
-                    #         new_face_features = new_face_features.flatten()
-                    #
-                    #         # Cập nhật dữ liệu huấn luyện với đặc trưng và nhãn mới
-                    #         new_predictions = self.knn_model.predict([new_face_features])
-                    #         self.knn_model._fit_X = np.concatenate((self.knn_model._fit_X, [new_face_features]), axis=0)
-                    #         self.knn_model._y = np.concatenate((self.knn_model._y, new_predictions), axis=0)
-                    #
-                    #         img_name = "dangky/{}_{}.png".format(self.tk_dang_ky, i)
-                    #         i += 1
-                    #         cv2.imwrite(img_name, self.cur_frame)
-                    #
-                    # # Huấn luyện lại mô hình KNN với dữ liệu huấn luyện đã được cập nhật
-                    # self.knn_model.fit(self.knn_model._fit_X, self.knn_model._y)
-                    #
-                    # # Lưu mô hình đã cập nhật
-                    # joblib.dump(self.knn_model, 'face_recognition_model_updated.joblib')
-                    # # Hiển thị thông báo
-                    # self.show_notification("Lưu dữ liệu thành công!!")
-                    self.show_notification("Lưu dữ liệu đang trong quá trình phát triển")
+                    self.doneShow = True
                 else:
                     self.show_notification("Không có dữ liệu để lưu")
+
+    def update_model(self):
+        try:
+            # lưu ảnh đã chụp vào thư mục
+            target_directory = "train_model\captured_images_update"
+            for index, frame in enumerate(self.image_collection):
+                image_name = f"{self.tk_dang_ky}{index + 1}.png"
+                import os
+                target_path = os.path.join(target_directory, image_name)
+                # Lưu ảnh vào thư mục đích
+                cv2.imwrite(target_path, frame)
+
+                print(f"Image {index + 1} saved to {target_path}")
+
+            # Tiền sử lý dữ liệu:
+            images_folder = "train_model/captured_images_update"  # Thư mục chứa các ảnh đã chụp
+            detected_faces_folder = "train_model/detected_faces_update"  # Thư mục để lưu trữ các khuôn mặt đã phát hiện
+            train_model.prepare_image.prepare_image(images_folder, detected_faces_folder)
+
+            # update model
+            model_file_path = 'train_model/model/build_model.joblib'  # Đường dẫn đến tệp lưu trữ mô hình
+            path_update = 'train_model/model/updated_build_model.joblib'  # Đường dẫn lưu model mới
+            train_model.update_model.update_model(detected_faces_folder, model_file_path, path_update)
+            self.show_notification("Đã cập nhật dữ liệu vào model mới")
+            return True
+        except Exception as e:
+            print("Lỗi update_model: ", str(e))
+            return False
 
 
 if __name__ == "__main__":

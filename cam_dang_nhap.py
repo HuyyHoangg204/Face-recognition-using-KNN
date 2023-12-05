@@ -4,6 +4,7 @@ import tkinter as tk
 import joblib
 import numpy as np
 import time
+import train_model.test_detect_face
 
 
 class CamDangNhap:
@@ -15,17 +16,10 @@ class CamDangNhap:
         self.tk_dang_ky = tk
         self.mk_dang_ky = mk
         # Load mô hình từ tệp đã lưu
-        self.knn_model = joblib.load('train_model/face_recognition_model.joblib')
+        self.knn_model = joblib.load('train_model/model/build_model.joblib')
 
         # Tải bộ phân loại khuôn mặt đã được huấn luyện từ OpenCV
         self.face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-
-    def extract_face_features(self, image, faces):
-        face_features = []
-        for (x, y, w, h) in faces:
-            face_roi = cv2.resize(image[y:y + h, x:x + w], (50, 50))
-            face_features.append(face_roi.flatten())
-        return np.array(face_features)
 
     def recognize_faces(self, frame):
         gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -33,7 +27,7 @@ class CamDangNhap:
 
         # Rút trích đặc trưng từ khuôn mặt
         if len(faces) > 0:
-            face_features = self.extract_face_features(frame, faces)
+            face_features = train_model.test_detect_face.extract_face_features(frame, faces)
 
             # Dự đoán nhãn cho khuôn mặt sử dụng mô hình KNN
             predictions = self.knn_model.predict(face_features)
@@ -46,10 +40,10 @@ class CamDangNhap:
 
                 if (time.time() - self.start_time) > 3:
                     if label == self.tk_dang_ky:
-                        self.show_notification("Nhận diện thành công")
+                        self.show_notification(f"Nhận diện thành công tài khoản {self.tk_dang_ky}")
                         self.doneShow = True
                     else:
-                        if (time.time() - self.start_time) > 10:
+                        if (time.time() - self.start_time) > 5:
                             self.show_notification("Nhận diện thất bại")
                             self.doneShow = True
 

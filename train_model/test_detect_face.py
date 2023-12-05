@@ -3,14 +3,6 @@ import cv2.data
 import joblib
 import numpy as np
 
-# Load mô hình từ tệp đã lưu
-# knn_model = joblib.load('face_recognition_model.joblib')
-# knn_model = joblib.load('build_model.joblib')
-knn_model = joblib.load('updated_build_model.joblib')
-
-# Tải bộ phân loại khuôn mặt đã được huấn luyện từ OpenCV
-face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-
 
 def extract_face_features(image, faces):
     face_features = []
@@ -39,28 +31,38 @@ def recognize_faces(frame):
             cv2.putText(frame, f'Person {label}', (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
 
 
-# Mở kết nối với webcam
-cap = cv2.VideoCapture(0)
+if __name__ == "__main__":
 
-# Đảm bảo kết nối với webcam được mở thành công
-if not cap.isOpened():
-    print("Không thể mở webcam.")
-    exit()
+    # Load mô hình từ tệp đã lưu
+    # knn_model = joblib.load('model/face_recognition_model.joblib')
+    knn_model = joblib.load('model/build_model.joblib')
+    # knn_model = joblib.load('model/updated_build_model.joblib')
 
-while True:
-    # Đọc khung hình từ webcam
-    ret, frame = cap.read()
+    # Tải bộ phân loại khuôn mặt đã được huấn luyện từ OpenCV
+    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
-    # Nhận diện khuôn mặt và vẽ bounding box
-    recognize_faces(frame)
+    # Mở kết nối với webcam
+    cap = cv2.VideoCapture(0)
 
-    # Hiển thị khung hình
-    cv2.imshow("Face Recognition", frame)
+    # Đảm bảo kết nối với webcam được mở thành công
+    if not cap.isOpened():
+        print("Không thể mở webcam.")
+        exit()
 
-    # Thoát nếu nhấn phím 'Esc'
-    if cv2.waitKey(1) == 27:
-        break
+    while True:
+        # Đọc khung hình từ webcam
+        ret, frame = cap.read()
 
-# Đóng kết nối với webcam và đóng cửa sổ hiển thị
-cap.release()
-cv2.destroyAllWindows()
+        # Nhận diện khuôn mặt và vẽ bounding box
+        recognize_faces(frame)
+
+        # Hiển thị khung hình
+        cv2.imshow("Face Recognition", frame)
+
+        # Thoát nếu nhấn phím 'Esc'
+        if cv2.waitKey(1) == 27:
+            break
+
+    # Đóng kết nối với webcam và đóng cửa sổ hiển thị
+    cap.release()
+    cv2.destroyAllWindows()
