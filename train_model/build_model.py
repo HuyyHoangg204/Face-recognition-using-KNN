@@ -43,7 +43,7 @@ labels = []
 name_model = "model/build_model.joblib"
 
 # Thư mục để lưu trữ các khuôn mặt đã phát hiện
-detected_faces_folder = "detected_faces_new"
+detected_faces_folder = "detected_faces"
 if not os.path.exists(detected_faces_folder):
     os.makedirs(detected_faces_folder)
 
@@ -79,6 +79,7 @@ for folder in os.listdir(detected_faces_folder):
                 face_features = extract_face_features(image)
                 # nếu không rút trích được đặc trưng thì bỏ qua
                 if face_features is None:
+                    print('face_features is None ???')
                     continue
                 # Gắn nhãn cho mỗi khuôn mặt với tên người tương ứng
                 labels.extend([person_name] * len(face_features))

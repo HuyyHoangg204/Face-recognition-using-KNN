@@ -59,6 +59,6 @@ def prepare_image(images_folder, detected_faces_folder):
 
 
 if __name__ == "__main__":
-    images_folder = "captured_images_update"  # Thư mục chứa các ảnh đã chụp
-    detected_faces_folder = "detected_faces_update"  # Thư mục để lưu trữ các khuôn mặt đã phát hiện
+    images_folder = "captured_images"  # Thư mục chứa các ảnh đã chụp
+    detected_faces_folder = "detected_faces"  # Thư mục để lưu trữ các khuôn mặt đã phát hiện
     prepare_image(images_folder, detected_faces_folder)
