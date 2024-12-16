@@ -16,7 +16,7 @@ class CamDangNhap:
         self.tk_dang_ky = tk
         self.mk_dang_ky = mk
         # Load mô hình từ tệp đã lưu
-        self.knn_model = joblib.load('train_model/model/build_model.joblib')
+        self.knn_model = joblib.load('train_model/model/updated_build_model.joblib')
 
         # Tải bộ phân loại khuôn mặt đã được huấn luyện từ OpenCV
         self.face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
@@ -31,6 +31,7 @@ class CamDangNhap:
 
             # Dự đoán nhãn cho khuôn mặt sử dụng mô hình KNN
             predictions = self.knn_model.predict(face_features)
+
 
             # Vẽ bounding box và hiển thị nhãn dự đoán
             for i, (x, y, w, h) in enumerate(faces):

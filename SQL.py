@@ -4,7 +4,7 @@ import re
 mysql_config = {
     'host': 'localhost',
     'user': 'root',
-    'password': 'khanhdz123',
+    'password': 'root',
     'database': 'tri_tue_nhan_tao'
 }
 
