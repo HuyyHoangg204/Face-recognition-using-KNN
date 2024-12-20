@@ -6,7 +6,7 @@ import joblib
 import numpy as np
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 import os
 import re
 import time
@@ -93,7 +93,7 @@ labels = np.array(labels)
 X_train, X_test, y_train, y_test = train_test_split(data, labels, test_size=0.2, random_state=42)
 
 # Tạo và huấn luyện mô hình KNN
-knn_model = KNeighborsClassifier(n_neighbors=3)
+knn_model = KNeighborsClassifier(n_neighbors=2)
 knn_model.fit(X_train, y_train)
 
 # Dự đoán trên tập kiểm tra
@@ -101,7 +101,15 @@ predictions = knn_model.predict(X_test)
 
 # Đánh giá độ chính xác của mô hình
 accuracy = accuracy_score(y_test, predictions)
+precision = precision_score(y_test, predictions, average='weighted', zero_division=0)
+recall = recall_score(y_test, predictions, average='weighted', zero_division=0)
+f1 = f1_score(y_test, predictions, average='weighted', zero_division=0)
+
+
 print(f'Accuracy: {accuracy * 100:.2f}%')
+print(f'Precision: {precision * 100:.2f}%')
+print(f'Recall: {recall * 100:.2f}%')
+print(f'F1-Score: {f1 * 100:.2f}%')
 
 joblib.dump(knn_model, name_model)
 
